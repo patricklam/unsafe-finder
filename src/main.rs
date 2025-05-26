@@ -128,7 +128,7 @@ fn main() {
     let filename = match (args.next(), args.next()) {
         (Some(filename), None) => filename,
         _ => {
-            eprintln!("Usage: dump-syntax path/to/filename.rs");
+            eprintln!("Usage: unsafe-finder path/to/filename.rs");
             process::exit(1);
         }
     };
