@@ -123,24 +123,22 @@ fn main() {
     let mut args = env::args();
     let _ = args.next(); // executable name
 
-    let filename = match (args.next(), args.next()) {
-        (Some(filename), None) => filename,
-        _ => {
-            eprintln!("Usage: unsafe-finder path/to/filename.rs");
-            process::exit(1);
-        }
-    };
-
-    let src = fs::read_to_string(&filename).expect("unable to read file");
-    let syntax = syn::parse_file(&src).expect("unable to parse file");
-
-    for item in syntax.items {
-        match item {
-            Impl(im) => print_pub_unsafe_and_unsafe_containing_fns(im),
-            Trait(t) => print_trait_unsafe_containing_fns(t),
-            _ => (),
-        }
+    if args.len() == 0 {
+        eprintln!("Usage: unsafe-finder [path/to/filename.rs]*");
+        process::exit(1);
     }
-    // Debug impl is available if Syn is built with "extra-traits" feature.
-    // println!("{:#?}", syntax);
+
+    for filename in args {
+	let src = fs::read_to_string(&filename).expect("unable to read file");
+	let syntax = syn::parse_file(&src).expect("unable to parse file");
+	println!("# Unsafe usages in file {}", filename);
+
+	for item in syntax.items {
+            match item {
+		Impl(im) => print_pub_unsafe_and_unsafe_containing_fns(im),
+		Trait(t) => print_trait_unsafe_containing_fns(t),
+		_ => (),
+            }
+	}
+    }
 }
