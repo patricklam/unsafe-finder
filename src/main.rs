@@ -122,11 +122,11 @@ fn print_trait_unsafe_containing_fns(it: ItemTrait) {
 }
 
 fn handle_file(path:&Path) {
-    println!("# Unsafe usages in file {}", path.display());
     if !path.to_str().unwrap().ends_with(".rs") {
 	return;
     }
 
+    println!("# Unsafe usages in file {}", path.display());
     let src = fs::read_to_string(&path).expect("unable to read file");
     let syntax = syn::parse_file(&src).expect("unable to parse file");
 
