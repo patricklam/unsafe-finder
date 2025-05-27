@@ -24,23 +24,21 @@ impl<'ast> Visit<'ast> for StmtVisitor {
     }
 }
 
-fn print_pub_unsafe_and_unsafe_containing_fns(i: ItemImpl) {
-    let mut i_copy = i.clone();
-    i_copy.items = Vec::new();
+fn print_pub_unsafe_and_unsafe_containing_fns(ii: ItemImpl) {
     let mut interesting = false;
     let mut pub_unsafe_fns = Vec::new();
     let mut unsafe_containing_fns = Vec::new();
-    for item in i.items {
+    for item in &ii.items {
         match item {
             ImplItem::Fn(f) =>
-            // print out all pub unsafe functions
             {
+		// record all pub unsafe functions
                 if matches!(f.vis, syn::Visibility::Public(_)) && matches!(f.sig.unsafety, Some(_))
                 {
                     interesting = true;
                     pub_unsafe_fns.push(format!("--- pub unsafe fn {}", f.sig.ident));
                 }
-                // print out functions that contain unsafe code in their bodies but that are not marked unsafe
+                // record functions that contain unsafe code in their bodies but that are not marked unsafe
                 else if matches!(f.sig.unsafety, None) {
                     let mut sv = StmtVisitor {
                         found_unsafe: false,
@@ -57,6 +55,9 @@ fn print_pub_unsafe_and_unsafe_containing_fns(i: ItemImpl) {
         }
     }
     if interesting {
+	// create an empty impl with the same name as ii
+	let mut i_copy = ii.clone();
+	i_copy.items = Vec::new();
         let file = syn::File {
             attrs: vec![],
             items: vec![Impl(i_copy)],
@@ -75,25 +76,20 @@ fn print_pub_unsafe_and_unsafe_containing_fns(i: ItemImpl) {
     }
 }
 
-fn print_trait_unsafe_containing_fns(i: ItemTrait) {
-    let mut i_copy = i.clone();
-    i_copy.items = Vec::new();
+fn print_trait_unsafe_containing_fns(it: ItemTrait) {
     let mut interesting = false;
     let mut unsafe_containing_fns = Vec::new();
-    for item in i.items {
+    for item in &it.items {
         match item {
             TraitItem::Fn(f) =>
-            // print out all pub unsafe functions
+            // record functions that contain unsafe code in their bodies but that are not marked unsafe
             {
                 if matches!(f.sig.unsafety, None) {
                     let mut sv = StmtVisitor {
                         found_unsafe: false,
                     };
-                    match f.default {
-                        Some(d) => {
-                            sv.visit_block(&d);
-                        }
-                        None => (),
+                    if let Some(d) = &f.default {
+                        sv.visit_block(&d);
                     }
                     if sv.found_unsafe {
                         interesting = true;
@@ -106,6 +102,8 @@ fn print_trait_unsafe_containing_fns(i: ItemTrait) {
         }
     }
     if interesting {
+	let mut i_copy = it.clone();
+	i_copy.items = Vec::new();
         let file = syn::File {
             attrs: vec![],
             items: vec![Trait(i_copy)],
