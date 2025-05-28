@@ -21,11 +21,14 @@ must verify that there is no undefined behaviour triggered by the
 unsafe code, probably by verifying the stated reason that the code is
 OK.
 
+There are some related metrics which are automatically generated in the
+`verify-rust-std` project. Those metrics live in `scritps/kani-std-analysis/metrics-data-core.json`.
+
 # Command-line arguments
 
-This tool takes a single .rs file as input and prints out a list of
-impls and traits that have functions in categories (1) through (3), as
-well as the involved functions.
+This tool takes a directory or a list of .rs files as input and prints
+out a list of impls and traits that have functions in categories (1)
+through (3), as well as the involved functions.
 
 ```
 $ target/debug/unsafe-finder rc.rs
